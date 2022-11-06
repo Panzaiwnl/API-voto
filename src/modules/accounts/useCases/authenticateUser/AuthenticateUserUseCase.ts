@@ -9,6 +9,14 @@ interface IRequest {
     password: string;
 }
 
+interface IResponse{
+    user: {
+        name: string;
+        email: string;
+    },
+    token: string;
+}
+
 @injectable()
 export class AuthenticateUserUseCase {
     constructor(
@@ -17,7 +25,7 @@ export class AuthenticateUserUseCase {
     ) { }
 
 
-    async execute({ email, password }: IRequest): Promise<void> {
+    async execute({ email, password }: IRequest): Promise<IResponse> {
         const user = await this.userRepository.findByEmail(email);
 
         if (!user) {
@@ -30,8 +38,18 @@ export class AuthenticateUserUseCase {
             throw new AppError("Email or password incorrect")
         }
 
-        const token = sign({}, "c6cc8094c2dc07b700ffcc36d64e2138")
+        const token = sign({}, "c6cc8094c2dc07b700ffcc36d64e2138",{
+            subject: user.id,
+            expiresIn: "1d"
+        })
 
+        return {
+            user: {
+              name: user.name,
+              email: user.email,
+            },
+            token,
+          };
 
 
 

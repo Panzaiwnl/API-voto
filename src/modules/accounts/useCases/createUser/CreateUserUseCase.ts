@@ -2,6 +2,7 @@ import { inject, injectable } from "tsyringe";
 import { AppError } from "../../../../shared/error/AppError";
 import { IUserRepository } from "../../repositories/IUserRepository";
 import { ICreateUserDTO } from "../../dtos/ICreateUserDTO"
+import {hash} from "bcrypt"
 
 interface IRequest{
     name: string;
@@ -11,7 +12,7 @@ interface IRequest{
 }
 
 @injectable()
-export class CreateUserService {
+export class CreateUserUseCase {
     constructor(
         @inject("UserRepository")
         private userRepository: IUserRepository
@@ -25,12 +26,18 @@ export class CreateUserService {
             throw new Error("Email already exists");
         }
 
+        const hashedPassword = await hash(password, 8);
+
         await this.userRepository.create({
             name,
             email,
-            password
+            password: hashedPassword
         })
 
+       
     }
 
+    
+
 }
+
